@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>قارئ القصص</title>
+  <style>
+    @font-face {
+      font-family: mont;
+      src: url('romel.ttf') format('truetype');
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    #name {
+      font-size: 30px;
+    }
+
+    #storyContent {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      min-height: 100px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px #000;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 id="name">قارئ القصص</h1>
+  <input type="number" id="storyNumber" min="1" placeholder="أدخل رقم القصة:" autofocus required>
+  <button id="readStoryButton">اقرأ القصة</button>
+
+  <div id="storyContent"></div>
+
+  <script>
+    document.getElementById('readStoryButton').addEventListener('click', async function() {
+      const storyNumber = document.getElementById('storyNumber').value;
+      const storyFile = `storys/2/${storyNumber}.txt`; // تأكد من أن المسار صحيح
+
+      try {
+        // قراءة اسم القصة من ملف names.txt
+        const namesArray = await loadNames();
+
+        // تغيير عنوان الصفحة إلى اسم القصة
+        if (storyNumber > 0 && storyNumber <= namesArray.length) {
+          //document.title = namesArray[storyNumber - 1]; // تغيير عنوان الصفحة
+          document.getElementById('name').innerText = namesArray[storyNumber - 1];
+
+        } else {
+          throw new Error('رقم القصة غير صالح');
+        }
+
+        // قراءة محتوى القصة
+        const response = await fetch(storyFile);
+        if (!response.ok) {
+          throw new Error('لم يتم العثور على القصة');
+        }
+        const data = await response.text();
+        document.getElementById('storyContent').innerText = data;
+
+      } catch (error) {
+        document.getElementById('storyContent').innerText = error.message;
+      }
+    });
+
+    async function loadNames() {
+      const response = await fetch(`storys/names.txt`);
+      if (!response.ok) {
+        throw new Error('لم يتم العثور على ملف الأسماء');
+      }
+      const output = await response.text();
+      return output.split('\n').map(line => line.trim()).filter(line => line); // فصل السطور في array
+    }
+  </script>
+</body>
+
+</html>
